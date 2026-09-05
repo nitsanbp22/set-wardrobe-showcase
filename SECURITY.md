@@ -2,6 +2,8 @@
 
 This repository is intentionally separated from SET's private production repository.
 
+SET is still under active development. Security controls, dependency posture, data access rules, deployment configuration, and hardening practices will continue to evolve alongside the product.
+
 ## What is intentionally excluded
 
 The public-facing showcase must never include:
@@ -22,6 +24,30 @@ The showcase is a curated snapshot rather than a fork. A fresh history prevents 
 
 Files under `code-samples/` are selected domain modules copied from the private application. They may reference production architecture modules that are intentionally not included here. The showcase is therefore not intended to be deployed as the live application.
 
+## Ongoing security review
+
+Security review is iterative rather than a one-time sign-off. The private production project should be re-audited at meaningful milestones, especially before broader releases or substantial architecture changes.
+
+Future reviews should prioritize:
+
+- secret and credential exposure;
+- privileged Supabase key usage;
+- Row Level Security and authorization boundaries;
+- authentication and session handling;
+- server/client trust boundaries;
+- unsafe administrative or destructive operations;
+- storage bucket access policies;
+- dependency and framework vulnerabilities;
+- input validation and injection risks;
+- sensitive logging and error leakage;
+- CORS, headers, cookies and deployment configuration;
+- rate limiting / abuse controls where relevant;
+- privacy and exposure of user-generated data.
+
+Critical findings should be fixed in the private production repository first. Only then should affected showcase documentation or code samples be refreshed.
+
 ## Before changing visibility to Public
 
-Run a final review for credential-like values, private URLs, user data and administrative scripts. The production repository should remain private and separate.
+Run a final review for credential-like values, private URLs, user data, administrative scripts, and any code samples that no longer reflect the current architecture.
+
+The production repository should remain private and separate.
