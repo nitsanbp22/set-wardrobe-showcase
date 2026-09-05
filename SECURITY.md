@@ -11,10 +11,12 @@ The public-facing showcase must never include:
 - `.env` files or production environment values;
 - Supabase service-role credentials or other privileged tokens;
 - administrative or destructive data-management scripts;
-- production user data, wardrobe images, account details or exports;
+- raw production user-data exports, account details, private storage assets, or other non-public personal data;
 - deployment-only configuration that is unnecessary to understand the engineering work;
 - internal AI/agent tooling directories;
 - production Git history.
+
+Approved product screenshots may contain non-sensitive wardrobe examples used to demonstrate the UI. They are reviewed separately before publication and are not a substitute for exposing the underlying production storage or user-data records.
 
 ## Why this repository has fresh history
 
@@ -48,6 +50,6 @@ Critical findings should be fixed in the private production repository first. On
 
 ## Before changing visibility to Public
 
-Run a final review for credential-like values, private URLs, user data, administrative scripts, and any code samples that no longer reflect the current architecture.
+Run a final review for credential-like values, private URLs, user data, administrative scripts, screenshots, and any code samples that no longer reflect the current architecture.
 
 The production repository should remain private and separate.
