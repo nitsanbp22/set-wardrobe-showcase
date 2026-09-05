@@ -1,6 +1,8 @@
 # SET — Security Review Checklist
 
-This checklist is intended for repeat reviews of the private production project as SET evolves.
+> **Reusable review template:** the unchecked boxes below are review prompts for future audits of the private production project. They do **not** represent known unresolved vulnerabilities in this showcase repository.
+
+This checklist is intended for repeat reviews as SET evolves. Findings are assessed against the current production architecture at the time of each audit, and critical production findings are addressed before related showcase material is refreshed.
 
 ## Critical — review first
 
@@ -55,7 +57,8 @@ Before copying a new sample from production into `set-wardrobe-showcase`:
 
 - [ ] Review the exact file for secrets, private URLs and internal identifiers.
 - [ ] Remove production-only configuration and privileged implementation details.
-- [ ] Confirm the sample contains no user data.
+- [ ] Confirm the sample contains no raw user data.
+- [ ] Review any screenshots for personal or private information before publication.
 - [ ] Confirm omitted dependencies do not make the sample misleading.
 - [ ] Update documentation if the architecture or behavior changed materially.
 - [ ] Run a final credential-like string scan over the showcase repository.
