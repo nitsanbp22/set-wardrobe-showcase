@@ -2,7 +2,7 @@
 
 SET is a product-focused wardrobe platform that helps users organize their closet, build valid outfits, plan what to pack for trips, and receive personalized outfit recommendations based on **occasion, styling coherence, weather, comfort, and learned preferences**.
 
-> **Portfolio showcase:** this repository is a curated, security-reviewed snapshot of selected engineering work from a private production codebase. Production credentials, administrative scripts, user data, deployment configuration, and internal tooling are intentionally excluded.
+> **Portfolio showcase:** this repository is a curated snapshot of selected engineering work from a private production codebase. SET is **actively under development**, and its architecture, recommendation logic, UX, testing, and security hardening continue to evolve. Production credentials, administrative scripts, user data, deployment configuration, and internal tooling are intentionally excluded from this showcase.
 
 ## Why I built it
 
@@ -125,6 +125,14 @@ I documented several decisions I would be happy to walk through in an interview,
 
 See [`docs/ENGINEERING_CASE_STUDY.md`](docs/ENGINEERING_CASE_STUDY.md).
 
+## Development status
+
+SET is an **active, evolving product**, not a finished demo. New features, algorithm refinements, data-model changes, UX improvements, automated tests, and security controls are being added iteratively.
+
+Security is treated as an ongoing engineering process rather than a one-time milestone. The private production repository can be re-audited at meaningful release points, and this showcase should be re-reviewed before each substantial public update.
+
+See [`docs/SECURITY_REVIEW_CHECKLIST.md`](docs/SECURITY_REVIEW_CHECKLIST.md) for the review process used for future updates.
+
 ## Security & scope
 
 This public-facing snapshot does **not** contain:
@@ -141,4 +149,5 @@ The production repository remains private and separate from this showcase.
 ---
 
 **Project:** SET  
+**Status:** Active development  
 **Focus:** Full-stack product development · recommendation systems · domain modeling · UX engineering
