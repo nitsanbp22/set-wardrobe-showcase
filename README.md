@@ -32,6 +32,22 @@ The guided item flow captures structured metadata that later becomes recommendat
 
 For a feature-by-feature walkthrough, see [`docs/PRODUCT_WALKTHROUGH.md`](docs/PRODUCT_WALKTHROUGH.md).
 
+## My role
+
+I lead SET's product and technical direction and translate product requirements into concrete UX flows, data structures, domain rules, and recommendation behavior.
+
+My work on the project includes:
+
+- product definition and feature design;
+- mobile-first UX and responsive behavior;
+- wardrobe and outfit domain modeling;
+- recommendation constraints, scoring behavior, and iteration;
+- Next.js / Supabase application integration;
+- debugging, testing, refactoring, and implementation review;
+- Hebrew / English and RTL product behavior.
+
+The code and documentation selected for this showcase focus on engineering decisions and product behavior that I can explain and defend in a technical interview.
+
 ## Why I built it
 
 Owning clothes is not the same as knowing what works together. SET models wardrobe items as structured data and turns styling decisions into an explainable recommendation pipeline rather than a random combination generator.
@@ -159,7 +175,7 @@ SET is an **active, evolving product**, not a finished demo. New features, algor
 
 Security is treated as an ongoing engineering process rather than a one-time milestone. The private production repository can be re-audited at meaningful release points, and this showcase should be re-reviewed before each substantial public update.
 
-See [`docs/SECURITY_REVIEW_CHECKLIST.md`](docs/SECURITY_REVIEW_CHECKLIST.md) for the review process used for future updates.
+See [`docs/SECURITY_REVIEW_CHECKLIST.md`](docs/SECURITY_REVIEW_CHECKLIST.md) for the reusable review template used for future audits.
 
 ## Security & scope
 
@@ -168,7 +184,7 @@ This public-facing snapshot does **not** contain:
 - environment files or production credentials;
 - Supabase service-role credentials;
 - destructive or administrative scripts;
-- production user data;
+- raw production user-data exports or private storage assets;
 - internal AI/tooling directories;
 - deployment-only configuration.
 
