@@ -4,6 +4,34 @@ SET is a product-focused wardrobe platform that helps users organize their close
 
 > **Portfolio showcase:** this repository is a curated snapshot of selected engineering work from a private production codebase. SET is **actively under development**, and its architecture, recommendation logic, UX, testing, and security hardening continue to evolve. Production credentials, administrative scripts, user data, deployment configuration, and internal tooling are intentionally excluded from this showcase.
 
+## Product preview
+
+<p align="center">
+  <img src="assets/screenshots/home-mobile.png" width="260" alt="SET personalized home and daily outfit recommendation" />
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/dress-me-mobile.png" width="260" alt="SET Dress Me personalized recommendation flow" />
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/closet-mobile.png" width="260" alt="SET digital closet" />
+</p>
+
+<p align="center"><sub>Personalized daily look · Dress Me recommendations · Digital closet</sub></p>
+
+### Responsive product experience
+
+![SET saved outfits desktop experience](assets/screenshots/outfits-desktop.png)
+
+SET is designed mobile-first while retaining a full desktop workflow for managing and reviewing wardrobe data, saved outfits, planning, and travel.
+
+### Rich wardrobe metadata
+
+<p align="center">
+  <img src="assets/screenshots/add-item-mobile.png" width="300" alt="SET add item comfort and weather metadata flow" />
+</p>
+
+The guided item flow captures structured metadata that later becomes recommendation input — including category, appearance, fit, comfort, temperature behavior, styling context, and other attributes.
+
+For a feature-by-feature walkthrough, see [`docs/PRODUCT_WALKTHROUGH.md`](docs/PRODUCT_WALKTHROUGH.md).
+
 ## Why I built it
 
 Owning clothes is not the same as knowing what works together. SET models wardrobe items as structured data and turns styling decisions into an explainable recommendation pipeline rather than a random combination generator.
