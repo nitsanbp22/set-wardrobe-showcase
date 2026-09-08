@@ -6,6 +6,17 @@ I am building SET around a simple product problem: having a full closet does not
 
 > **Portfolio showcase:** this repository is a curated product and engineering snapshot based on a private production codebase. SET is actively under development. Production credentials, user data, administrative scripts, deployment configuration, and internal tooling are intentionally excluded.
 
+## Latest product iteration — September 2026
+
+The current iteration focuses on making outfit selection more direct and recommendation behavior more consistent:
+
+- **Independent outfit selection:** a scroll-based selector for each clothing category, with an optional jacket slot.
+- **Responsive layout refinement:** clearer internal spacing between card borders, tags, buttons, and text on mobile and desktop.
+- **Recommendation quality:** dress exclusivity, clearer occasion boundaries, everyday use of suitable elegant items, weather-aware layers, and learning from saved looks.
+- **Daily usability:** more useful home-screen content and smoother loading and outfit-generation flows.
+
+These are active product requirements from the September 5–8 iteration, not a verified release checklist. Existing screenshots and code samples remain the earlier snapshot. See [Product iteration case study](docs/PRODUCT_ITERATION.md) for rationale, acceptance criteria, and verification status.
+
 ## Product preview
 
 <p align="center">

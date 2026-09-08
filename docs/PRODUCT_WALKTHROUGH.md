@@ -2,6 +2,10 @@
 
 SET is designed as a mobile-first wardrobe system with a responsive desktop experience. This walkthrough highlights the main product flows represented in the showcase screenshots.
 
+## Latest iteration
+
+The September 2026 product iteration adds requirements for independent scroll-based outfit selection, an optional jacket, clearer card spacing, recommendation precision, and loading improvements. See the [iteration case study](PRODUCT_ITERATION.md) for acceptance criteria and status. The screenshots below belong to the earlier showcase snapshot.
+
 ## 1. Personalized home
 
 The home screen gives the user a context-aware daily recommendation rather than a static dashboard. The recommendation can incorporate current conditions and learned wardrobe preferences, while still allowing the user to request another option or continue editing the look.
