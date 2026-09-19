@@ -5,7 +5,11 @@ SET treats outfit generation as a constrained ranking problem rather than random
 ## Pipeline
 
 ```text
-Context
+Wardrobe + context
+  ↓
+Normalize direct request constraints
+  ↓
+Filter explicit exclusions
   ↓
 Candidate generation
   ↓
@@ -13,14 +17,33 @@ Hard structural validation
   ↓
 Styling + context scoring
   ↓
-Personalization
+Confidence-aware personalization
   ↓
-Quality threshold
+Preferred quality threshold
   ↓
-Diversity-aware ranking
+Best-valid fallback for sparse closets
+  ↓
+Session-aware diversity ranking
 ```
 
-## 1. Candidate generation
+## 1. Direct request constraints
+
+Recommendation context can come from structured product controls or from the conversational Stylist.
+
+Current development inputs can include:
+
+- occasion;
+- silhouette;
+- preferred or exact color families;
+- minimum comfort level;
+- whether an extra layer is wanted;
+- activity level;
+- indoor / mixed / outdoor environment;
+- explicit excluded garment or material keywords.
+
+Requested colors are normalized before scoring. Explicit exclusions are applied before candidate generation so the system does not waste ranking capacity on looks the user already rejected.
+
+## 2. Candidate generation
 
 Candidates are created from bounded outfit templates such as:
 
@@ -31,20 +54,21 @@ Candidates are created from bounded outfit templates such as:
 
 The generator deliberately avoids brute-forcing every possible subset of the wardrobe. This keeps generation predictable and makes structural correctness easier to enforce.
 
-## 2. Hard constraints before scoring
+## 3. Hard constraints before scoring
 
 A candidate must satisfy canonical outfit invariants before it can be ranked. Examples include:
 
 - one-piece garments are mutually exclusive with bottoms and primary tops;
 - separates require a valid top + bottom core;
 - only physically plausible top-on-top layering is allowed;
-- slot cardinality is limited for shoes, bags and outerwear.
+- slot cardinality is limited for shoes, bags, bottoms, and primary outerwear;
+- complete recommendations require footwear.
 
-This separation is important: a structurally invalid outfit should never survive because it happened to receive a strong color or occasion score.
+A structurally invalid outfit cannot survive because it received a strong color, personalization, or occasion score.
 
-## 3. Multi-dimensional scoring
+## 4. Multi-dimensional scoring
 
-Each valid candidate is evaluated across multiple dimensions. The production system includes signals for:
+Each valid candidate can be evaluated across:
 
 - occasion suitability;
 - formality;
@@ -60,11 +84,13 @@ Each valid candidate is evaluated across multiple dimensions. The production sys
 - weather suitability;
 - negative styling rules.
 
-The relative weight of these signals changes by context. A wedding recommendation emphasizes occasion, formality and footwear more strongly, while travel emphasizes practicality, comfort and weather.
+Weights vary by context. A wedding, everyday request, travel scenario, or high-activity day should not optimize the same dimensions identically.
 
-## 4. Personalization
+## 5. Personalization
 
-Personalization is a refinement layer, not a replacement for general outfit quality. The engine can learn evidence around:
+Personalization is a refinement layer, not a replacement for general outfit quality.
+
+Evidence can include:
 
 - silhouette pairings;
 - footwear pairings;
@@ -74,20 +100,39 @@ Personalization is a refinement layer, not a replacement for general outfit qual
 - materials;
 - individual-item affinity;
 - repeated item pairs;
-- style anchors.
+- style anchors;
+- saved, rated, built, and worn looks.
 
-Personal evidence is confidence-weighted so a small number of observations cannot dominate the engine prematurely.
+Personal evidence is confidence-weighted so early behavior does not overfit the system.
 
-## 5. Quality gate
+## 6. Preferred threshold with graceful fallback
 
-Candidates below a configurable recommendation threshold are removed before the final ranking stage.
+The engine prefers candidates above a configured recommendation threshold.
 
-Missing metadata reduces confidence but does not automatically make an item incompatible. This prevents sparse wardrobe data from becoming an accidental hard rejection rule.
+However, a sparse or incomplete wardrobe should not automatically create an empty screen. If no valid candidates clear the preferred threshold, the current generator can use the best-scoring valid pool as a fallback and still apply diversity before returning results.
 
-## 6. Diversity-aware ranking
+This is a product tradeoff: preserve structural validity while degrading recommendation confidence more gracefully.
 
-A recommendation batch should not repeatedly show the same garments with only a minor accessory changed.
+## 7. Session-aware diversity
 
-The final ranking therefore applies diversity penalties to repeated garments and repeated structures while still preserving high-quality results.
+A pure score sort tends to repeat the same high-performing garments across consecutive requests.
 
-This makes the recommendation surface useful as a wardrobe-discovery tool rather than simply returning the highest-scoring few pieces again and again.
+The engine therefore tracks signals such as:
+
+- previously shown outfit signatures;
+- item usage within the current recommendation session;
+- repeated outfit structures.
+
+Diversity penalties are applied while preserving relevance. This helps SET surface more of the wardrobe instead of returning small variations on the same look.
+
+## 8. Conversational Stylist integration
+
+The Stylist does not generate free-form clothing descriptions. It translates natural language into the same structured recommendation context used by the rest of SET.
+
+```text
+Message → intent schema → recommendation context → valid wardrobe candidates
+```
+
+The interpretation layer is bounded and sanitized. An external model can be used when configured, while a deterministic parser provides a fallback.
+
+This keeps the AI-assisted experience connected to inspectable product logic rather than replacing it.

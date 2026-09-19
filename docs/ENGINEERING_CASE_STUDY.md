@@ -1,60 +1,49 @@
 # Engineering Case Study
 
-This document highlights several engineering decisions behind SET that are useful to discuss in a technical interview.
+This document highlights engineering and product-system decisions behind SET that are useful to discuss in a technical or product interview.
 
 ## 1. Structural correctness before ranking
 
 ### Problem
-A recommendation system can produce a visually plausible score for an outfit that is structurally invalid — for example, a dress combined with trousers and a primary top.
+A recommendation system can assign a visually plausible score to an outfit that is structurally invalid — for example, a dress combined with trousers and a primary top.
 
 ### Decision
-SET separates **hard invariants** from **soft scoring**.
-
-Candidates must first satisfy canonical outfit rules. Only valid candidates reach the styling and personalization layers.
+SET separates **hard invariants** from **soft scoring**. Candidates must satisfy canonical outfit rules before reaching styling and personalization.
 
 ### Why it matters
-This prevents high scores in one dimension, such as color compatibility, from compensating for an impossible outfit structure.
-
-It also gives the product a single source of truth shared by recommendation generation and manual outfit-building flows.
+A high score in one dimension cannot compensate for an impossible outfit structure, and the same validator can be reused across manual building and recommendation flows.
 
 ---
 
 ## 2. Bounded candidate generation instead of brute force
 
 ### Problem
-If every wardrobe item could be combined with every other item, candidate count grows quickly and most combinations are meaningless.
+Combining every item with every other item creates a rapidly growing search space where most combinations are meaningless.
 
 ### Decision
-The generator works from outfit templates such as:
-
-- top + bottom + shoes;
-- one-piece + shoes;
-- valid layered separates;
-- optional accessory enrichment.
+The generator uses outfit templates such as top + bottom + shoes, one-piece + shoes, valid layered separates, and optional accessory enrichment.
 
 ### Why it matters
-The search space stays manageable, results are easier to reason about, and structural validation remains explicit.
-
-This also makes it easier to apply occasion-aware ordering without turning the system into an opaque combinatorial search.
+The search space stays manageable, results are easier to reason about, and occasion-aware ordering remains inspectable.
 
 ---
 
-## 3. Context-specific scoring weights
+## 3. Context-specific scoring
 
 ### Problem
-A single global scoring formula does not represent the meaning of a “good outfit” across different situations.
+A single global definition of a “good outfit” does not represent every situation.
 
 ### Decision
-SET changes the relative importance of scoring dimensions by occasion.
+SET changes the relative importance of recommendation dimensions by context.
 
 Examples:
 
-- **Wedding / event:** occasion fit, formality and footwear are dominant.
-- **Travel:** practicality, weather, comfort and footwear matter more.
-- **Everyday:** practicality, weather, comfort and general styling coherence are emphasized.
+- **Wedding / event:** occasion fit, formality, and footwear matter strongly.
+- **Travel:** practicality, weather, comfort, and footwear gain importance.
+- **Everyday:** practicality, weather, comfort, wardrobe rotation, and general styling coherence are emphasized.
 
 ### Why it matters
-The system models the user’s intent rather than treating every outfit as the same optimization problem.
+The system models the user's intent rather than treating all outfits as the same optimization problem.
 
 ---
 
@@ -64,83 +53,123 @@ The system models the user’s intent rather than treating every outfit as the s
 A personalization system can overfit quickly when a user has saved only a small number of outfits.
 
 ### Decision
-Personal preferences are applied as a refinement layer whose influence grows with evidence confidence.
-
-The profile can learn patterns such as:
-
-- preferred silhouette combinations;
-- footwear pairings;
-- category combinations;
-- color and palette tendencies;
-- formality preferences;
-- recurring item pairs;
-- style anchors.
+Personal preferences refine the baseline score, and their influence grows with evidence confidence.
 
 ### Why it matters
-General styling logic remains stable for new users while the experience becomes more individual as evidence accumulates.
+General styling logic remains stable for new users while the product becomes more individual as evidence accumulates.
 
 ---
 
-## 5. Missing metadata affects confidence, not validity
+## 5. Missing metadata affects confidence, not automatic validity
 
 ### Problem
-Real wardrobes contain incomplete data. Treating every missing attribute as a rejection condition would make recommendations brittle.
+Real wardrobes contain incomplete metadata.
 
 ### Decision
-Missing metadata generally lowers confidence rather than automatically declaring an outfit incompatible.
+Missing information generally reduces confidence rather than automatically rejecting an item or outfit.
 
 ### Why it matters
-The system can continue generating useful results while encouraging richer metadata over time.
+The system remains useful while data quality improves over time.
 
 ---
 
-## 6. Diversity as a ranking requirement
+## 6. Diversity is a ranking requirement
 
 ### Problem
-A pure top-score ranking often collapses onto a small number of garments, showing nearly identical outfits repeatedly.
+A pure top-score ranking repeatedly returns the same garments.
 
 ### Decision
-After scoring and quality filtering, SET applies diversity-aware ranking with penalties for repeated garments and repeated outfit structures.
+SET tracks previous signatures, item reuse, and structure reuse within a session and applies diversity-aware ranking.
 
 ### Why it matters
-The recommendation surface helps the user discover more of their wardrobe instead of repeatedly reinforcing the same few pieces.
+The product helps users discover more of their wardrobe rather than reinforcing a narrow subset.
 
 ---
 
-## 7. Weather as a separate domain concern
+## 7. Weather is a separate domain concern
 
 ### Problem
-Temperature alone is not enough to decide whether an outfit is appropriate.
+Temperature alone is not enough to decide whether an outfit is practical.
 
 ### Decision
-SET’s thermal logic considers factors such as:
+Thermal reasoning can consider temperature, feels-like temperature, later temperature drops, wind, rain, indoor/outdoor context, activity, user sensitivity, garment type, material, and layering.
 
-- current / feels-like temperature;
-- a later temperature drop;
-- wind;
-- rain;
-- indoor vs. outdoor context;
-- activity level;
-- personal temperature sensitivity;
-- garment category, material and layering.
-
-The system can return a tri-state layer recommendation: **required**, **recommended**, or **not needed**.
+The result can distinguish **layer required**, **layer recommended**, and **layer not needed**.
 
 ### Why it matters
-Weather reasoning remains independent from general styling coherence and can evolve without rewriting the recommendation engine.
+Weather logic can evolve independently of general styling coherence.
 
 ---
 
-## 8. Separate production and portfolio surfaces
+## 8. Natural language becomes bounded product state
 
-The production application remains in a private repository. This showcase is intentionally separate and has a fresh history.
+### Problem
+A conversational styling feature can become unreliable if an LLM is allowed to invent clothes, make unrestricted styling decisions, or bypass product rules.
 
-This allows selected engineering work to be discussed publicly without exposing:
+### Decision
+The SET Stylist uses a narrow intent schema. The interpretation layer can extract:
 
-- credentials;
-- administrative tooling;
-- user data;
-- deployment internals;
-- private product implementation details that are unnecessary for an interview.
+- occasion;
+- silhouette;
+- comfort floor;
+- color preferences;
+- layer preference;
+- activity;
+- environment;
+- explicit exclusions.
 
-The separation also means portfolio presentation changes cannot affect the live application.
+The result is sanitized before it enters recommendation logic.
+
+### Why it matters
+The language model handles language. The product domain still handles outfits.
+
+That boundary makes the feature easier to test, debug, and explain.
+
+---
+
+## 9. External AI is optional, not a single point of failure
+
+### Problem
+External model latency, quotas, configuration, or provider failure should not make the core styling flow unusable.
+
+### Decision
+The authenticated interpretation endpoint uses Gemini when configured and falls back to deterministic parsing when it is unavailable or returns invalid output.
+
+### Why it matters
+The user still receives a functional styling path, and the application retains predictable baseline behavior.
+
+---
+
+## 10. Shared domain logic across web and mobile
+
+### Problem
+A separate mobile application can easily drift into a second implementation of the same product rules.
+
+### Decision
+The Capacitor mobile client owns mobile-specific UI and device integrations while reusing the recommendation domain.
+
+### Why it matters
+Dress rules, personalization, diversity, and weather behavior can remain consistent across surfaces.
+
+---
+
+## 11. Sparse-closet fallback without weakening invariants
+
+### Problem
+A strict score threshold can create an empty recommendation experience for small or incomplete wardrobes.
+
+### Decision
+SET first prefers candidates above the configured quality threshold. If none qualify, it can take the best-scoring valid pool and still apply diversity.
+
+### Why it matters
+The system degrades recommendation confidence before it degrades structural correctness.
+
+---
+
+## 12. Separate production and portfolio surfaces
+
+The production application remains private. This showcase is intentionally separate and has a curated history.
+
+This allows selected work to be discussed publicly without exposing credentials, administrative tooling, user data, deployment internals, or unnecessary private implementation details.
+
+Portfolio updates therefore cannot modify the live application.

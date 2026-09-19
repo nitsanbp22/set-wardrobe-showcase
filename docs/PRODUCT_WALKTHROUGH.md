@@ -1,61 +1,88 @@
 # SET — Product Walkthrough
 
-SET is designed as a mobile-first wardrobe system with a responsive desktop experience. This walkthrough highlights the main product flows represented in the showcase screenshots.
+SET is a mobile-first wardrobe system with responsive web behavior and a dedicated native-facing mobile client in development.
 
-## Latest iteration
-
-The September 2026 product iteration adds requirements for independent scroll-based outfit selection, an optional jacket, clearer card spacing, recommendation precision, and loading improvements. See the [iteration case study](PRODUCT_ITERATION.md) for acceptance criteria and status. The screenshots below belong to the earlier showcase snapshot.
+The screenshots in this repository represent an earlier visual snapshot. The development notes below describe newer functionality that is verified in the current branches but is not necessarily pictured.
 
 ## 1. Personalized home
 
-The home screen gives the user a context-aware daily recommendation rather than a static dashboard. The recommendation can incorporate current conditions and learned wardrobe preferences, while still allowing the user to request another option or continue editing the look.
+The home screen provides a context-aware daily recommendation instead of a static dashboard.
+
+The recommendation can use wardrobe data, user preferences, weather context, and recommendation-history signals. Current development work also refines the daily-recommendation path and related wear-history data.
 
 **Screenshot:** `assets/screenshots/home-mobile.png`
 
 ## 2. Digital closet
 
-The closet is the structured source of truth for wardrobe items. Users can search, filter, refine incomplete metadata, and inspect availability across the wardrobe.
+The closet is the structured source of truth for wardrobe items.
 
-This structured item model is what makes later recommendation logic possible: SET reasons about category, color, material, fit, comfort, temperature behavior, occasion, and styling metadata rather than treating an item as only an image.
+Users can organize and inspect clothing through metadata such as category, color, material, fit, comfort, temperature behavior, occasion, and styling context. This structure is what allows later recommendation logic to reason about real items rather than image-only records.
 
 **Screenshot:** `assets/screenshots/closet-mobile.png`
 
 ## 3. Adding and enriching an item
 
-Adding an item is a guided multi-step flow. The first required information is intentionally small, while richer metadata can be progressively added.
-
-The comfort and weather step captures information that feeds the recommendation engine instead of remaining purely descriptive UI data.
+Adding an item is a guided flow. The product aims to collect enough information to improve later recommendations without turning setup into a long data-entry task.
 
 **Screenshot:** `assets/screenshots/add-item-mobile.png`
 
 ## 4. Dress Me recommendations
 
-Dress Me is the main recommendation surface. The user can choose an occasion and receive ranked looks using the wardrobe already stored in SET.
+Dress Me is the main structured recommendation surface.
 
-The recommendation pipeline combines hard outfit-structure constraints with occasion, styling coherence, practicality, weather suitability, and confidence-aware personalization. Individual pieces can be swapped without rebuilding the entire look manually.
+Users choose or imply context and receive ranked looks built from their wardrobe. The pipeline combines hard outfit constraints with styling coherence, occasion, practicality, comfort, weather, personalization, and diversity.
+
+Direct request constraints can also include preferred colors, exclusions, silhouette, activity, environment, and layer preference.
 
 **Screenshot:** `assets/screenshots/dress-me-mobile.png`
 
-## 5. Saved outfits
+## 5. Conversational SET Stylist
 
-The desktop Outfits view demonstrates that the product is responsive rather than a mobile-only prototype. Saved combinations can be reviewed, searched, and reused as part of the wider wardrobe workflow.
+The newer Stylist flow lets the user describe a need naturally, for example:
+
+> Date tonight, effortless but no jeans.
+
+The message is interpreted into a bounded recommendation context. The system can use AI interpretation when configured, but it also includes a deterministic fallback.
+
+The recommendation engine — not the language model — then selects valid looks from the user's wardrobe.
+
+The Stylist exists in both the web development branch and the dedicated mobile branch.
+
+See [AI Stylist](AI_STYLIST.md).
+
+## 6. Saved outfits
+
+Saved combinations can be reviewed, reused, and treated as personalization evidence.
+
+The planner can rank saved outfits for a target context rather than treating every saved look as equally suitable.
 
 **Screenshot:** `assets/screenshots/outfits-desktop.png`
 
-## 6. Travel / suitcase mode
+## 7. Travel / suitcase mode
 
-Travel mode creates a trip-scoped wardrobe from the user's main closet. Once a suitcase is selected, recommendation flows can operate on the packed subset rather than the entire wardrobe.
+Travel mode creates a trip-scoped wardrobe from the user's main closet.
 
-This is an example of a product requirement that affects both UX and domain logic: the same recommendation rules remain reusable, while the eligible inventory is constrained by travel context.
+Recommendation flows can operate on the packed subset while reusing the same structural, styling, weather, and personalization rules.
 
 **Screenshot:** `assets/screenshots/suitcase-desktop.png`
 
-## Product principles visible in the UI
+## 8. Dedicated mobile client
 
-- **Mobile-first, responsive implementation** — the same product system adapts between bottom navigation on mobile and a persistent sidebar on desktop.
-- **Progressive disclosure** — complex wardrobe metadata is split into guided steps instead of one long form.
-- **Explainable context** — occasion and weather context are visible to the user rather than hidden inside a black-box recommendation.
-- **Reusable domain rules** — outfit validity, weather reasoning, and recommendation logic live outside individual screens.
-- **Product continuity** — closet → recommendations → saved outfits → planning → travel all operate on the same structured wardrobe model.
+The mobile branch uses React, Vite, and Capacitor.
 
-> SET is actively under development. Screenshots represent the product at a specific development snapshot and may evolve as the UI, recommendation engine, and security model continue to improve.
+It has its own navigation and mobile interaction layer, but recommendation logic is shared with the broader SET domain. The current package includes native-facing integrations for camera, geolocation, haptics, and local notifications.
+
+This should be read as active development, not as an app-store release claim.
+
+## Product principles visible across the system
+
+- **Mobile-first by use case** — the core interaction happens while choosing clothes, getting dressed, or packing.
+- **Progressive disclosure** — rich wardrobe metadata is collected without forcing one oversized form.
+- **Correctness before creativity** — outfit structure is validated before ranking.
+- **Explainable context** — occasion, weather, comfort, and direct user constraints remain inspectable.
+- **AI as an interpretation layer** — language understanding is separated from wardrobe selection.
+- **Graceful fallback** — both AI interpretation and recommendation thresholds have fallback behavior.
+- **Shared domain rules** — web and mobile should not diverge in what constitutes a valid or relevant look.
+- **Product continuity** — closet → recommendations → saved outfits → planning → travel → Stylist all operate on the same wardrobe model.
+
+> SET is actively under development. Visual design, recommendation logic, and native capabilities continue to evolve.
