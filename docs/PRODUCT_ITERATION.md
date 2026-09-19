@@ -1,83 +1,104 @@
-# SET — Product iteration: from feedback to acceptance criteria
+# SET — Product iteration: verified development snapshot
 
-**Updated:** September 8, 2026  
-**Scope:** Product and UX requirements discussed September 5–8, 2026.
+**Updated:** September 19, 2026  
+**Scope:** Current web development branch, dedicated mobile branch, and the public showcase documentation.
 
-This case study records the latest product direction and the checks needed to demonstrate it. It does not claim that all changes have shipped. The private implementation was unavailable during this documentation refresh, so the existing code samples and screenshots have not been revalidated or replaced.
+This document replaces the earlier September 8 requirements-only snapshot with a verification-oriented view of the current development work. It still does **not** claim that every item below has been released to the public production branch or app stores.
 
-## 1. Manual outfit building
+## 1. Conversational SET Stylist
 
-**Feedback:** Selecting an outfit should feel like browsing clothing pieces together, with direct control over each category.
+### Current development behavior
 
-**Product direction:** Provide independent scrolling through tops, bottoms, and shoes. Let the user enable an optional jacket category. Preserve compatible selections while another category changes.
+A user can describe a styling need in natural language and receive looks generated from their actual wardrobe.
 
-**Acceptance criteria:**
+The current flow can interpret constraints such as:
 
-- Changing the top preserves the chosen bottom and shoes.
-- Enabling the jacket slot allows browsing outerwear; disabling it removes that optional selection from the resulting look.
-- A dress or one-piece replaces the top-and-bottom base. It can be paired with shoes, a bag, appropriate jewelry, and an optional jacket.
-- Saved outfits match the visible selection.
-- The selection flow works on mobile and desktop, including Hebrew RTL.
+- occasion;
+- silhouette;
+- comfort;
+- preferred colors;
+- exact-color intent;
+- whether an extra layer is wanted;
+- activity level;
+- indoor / outdoor context;
+- explicit exclusions such as jeans or heels.
 
-This direction makes individual choices easier while retaining the structural rules already represented in the showcase.
+The server interpretation endpoint requires an authenticated user session.
 
-## 2. Card spacing and control alignment
+### AI boundary
 
-**Feedback:** Tags and buttons remain too close to their enclosing borders, and the relationship between text, controls, and card dimensions feels unbalanced.
+When a Gemini API key is configured, the endpoint can use the model to translate the message into a bounded intent schema. The response is sanitized before use.
 
-**Product direction:** Treat card padding, control spacing, and text wrapping as a shared layout concern across viewport sizes.
+If the model is unavailable, invalid, too slow, or not configured, SET falls back to deterministic parsing.
 
-**Acceptance criteria:**
+The external model does not choose arbitrary garments. The final looks are still created by SET's recommendation engine from wardrobe items that actually belong to the user.
 
-- Cards retain visible internal padding on all sides.
-- Wrapped tags and long Hebrew labels stay inside the padded content area.
-- Buttons remain clearly separated from neighboring text and the card border.
-- Mobile and desktop layouts preserve a consistent spacing hierarchy.
-- Controls remain readable and usable without clipping or overlap.
+## 2. Recommendation generation refinements
 
-No completed visual fix is claimed until the affected screens have been reviewed.
+The current development generator includes additional handling for:
 
-## 3. Recommendation precision
+- normalized requested color families;
+- explicit excluded keywords;
+- current-session item reuse;
+- current-session structure reuse;
+- previously shown signatures;
+- a best-valid fallback pool when no candidate clears the preferred minimum score.
 
-**Feedback:** Some generated looks combine a dress with separates; occasion categories overlap too much; weather and learned preferences need more consistent influence.
+These changes address a recurring product issue: recommendation systems can otherwise become repetitive or fail too aggressively when wardrobe data is sparse.
 
-| Requirement | Intended behavior | Acceptance example |
-| --- | --- | --- |
-| Dress exclusivity | A one-piece serves as the complete base | No primary top or trousers alongside a dress |
-| Occasion boundaries | Distinguish wedding and evening suitability from everyday clothing | Casual jeans and a T-shirt do not become a wedding look through color matching alone |
-| Elegant items in everyday looks | Allow suitable elegant garments in everyday combinations; do not assume the reverse | An elegant item may work casually when the rest of the look supports it |
-| Weather and layers | Evaluate outfit warmth and whether an extra layer is useful | A jacket is considered when conditions warrant it |
-| Personalization | Use the user's saved and created looks as preference evidence | Learned patterns refine ranking while outfit validity remains mandatory |
+## 3. Daily recommendation and planner
 
-These criteria describe what the current iteration should verify. The existing [recommendation overview](RECOMMENDATION_ENGINE.md) and selected code samples document the earlier engineering snapshot.
+The current development comparison also includes changes to:
 
-## 4. Home-screen usefulness and loading
+- home daily recommendation logic;
+- planner ranking for saved outfits;
+- wear-history statistics used by product flows.
 
-**Feedback:** The home screen should offer more relevant information, and loading and outfit-generation transitions should feel smoother.
+The public showcase documents these as active development areas rather than claiming a measured improvement that has not been benchmarked publicly.
 
-**Product direction:** Prioritize useful daily wardrobe actions and investigate the delays users encounter during the main flows.
+## 4. Dedicated mobile client
 
-**Proposed verification:**
+The mobile development branch contains a separate React/Vite/Capacitor client.
 
-- Review whether the home screen helps the user take a useful next action.
-- Measure home, closet, and outfit-generation timings before and after changes under the same conditions.
-- Check visible feedback while loading or generating, including empty and error states.
-- Confirm that changed preferences produce the corresponding results and that previous results are not mistaken for the new selection.
+Verified mobile work includes:
 
-No speed improvement, benchmark, or user-impact metric is asserted in this refresh.
+- a dedicated SET Stylist screen;
+- reuse of shared recommendation logic;
+- authenticated calls to the Stylist interpretation endpoint;
+- mobile weather context;
+- a package configuration containing Capacitor Camera, Geolocation, Haptics, and Local Notifications.
 
-## Evidence and refresh status
+This is a development implementation snapshot, not a statement that iOS or Android store distribution is complete.
 
-| Material | Status on September 8, 2026 |
+## 5. Web / mobile parity principle
+
+The goal is not pixel-for-pixel identity. Web and mobile can have different interaction patterns while preserving the same product semantics:
+
+- the same outfit validity rules;
+- the same recommendation context;
+- the same personalization model;
+- the same weather logic;
+- the same interpretation of user constraints.
+
+## 6. What remains intentionally cautious in this showcase
+
+| Area | Showcase wording |
 | --- | --- |
-| Latest product requirements | Captured in this document |
-| README and walkthrough | Updated to link this iteration |
-| Selected code samples | Retained from the existing showcase; no new production comparison |
-| Screenshots | Retained from the existing showcase; not evidence of the proposed selector or spacing fixes |
-| Production tests and security review | Not run as part of this documentation refresh |
-
-A future implementation refresh should compare the current private source, review the selected modules for publication, and replace screenshots only after checking the updated experience.
+| AI Stylist | Implemented in current development branches |
+| Gemini integration | Optional intent interpretation with deterministic fallback |
+| Mobile app | Dedicated Capacitor client in active development |
+| Screenshots | Earlier visual snapshot; not evidence of every current feature |
+| Performance | No public benchmark claim |
+| App-store release | Not claimed |
+| Production-main parity | Not claimed |
 
 ## Interview discussion
 
-This iteration illustrates the connection between product feedback and implementation criteria: identify the user's friction, define the expected behavior, preserve domain constraints, and specify how completion will be checked. It also separates a design decision from evidence that the change works.
+This iteration is useful because it demonstrates how a product can add AI without handing core product behavior to the model:
+
+1. define a bounded language-understanding task;
+2. sanitize the result into known product state;
+3. preserve deterministic domain rules;
+4. design a fallback path;
+5. reuse the same domain across web and mobile;
+6. verify what is actually implemented before presenting it publicly.
