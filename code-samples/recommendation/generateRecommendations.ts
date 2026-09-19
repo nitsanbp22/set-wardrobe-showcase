@@ -5,20 +5,54 @@ import { scoreCandidate } from './scoreCandidate';
 import { diversifyResults } from './diversify';
 import { DEFAULT_RECOMMENDATION_CONTEXT, type RecommendationInput } from './types';
 
+function normalizeToken(value: string) {
+  return value.trim().toLowerCase().replace(/[\s_-]+/g, ' ');
+}
+
+function itemMatchesExcludedKeyword(
+  item: RecommendationInput['items'][number],
+  keywords: string[] | undefined,
+) {
+  if (!keywords?.length) return false;
+  const searchable = normalizeToken([
+    item.name ?? '',
+    item.subcategory ?? '',
+    item.material ?? '',
+    item.pattern ?? '',
+    ...(item.styleTags ?? []),
+  ].join(' '));
+
+  return keywords.some((keyword) => searchable.includes(normalizeToken(keyword)));
+}
+
+function normalizeRequestedColors(colors: string[] | undefined) {
+  if (!colors?.length) return undefined;
+  const aliases: Record<string, string> = {
+    gray: 'grey',
+    multicolour: 'multicolor',
+  };
+
+  return Array.from(
+    new Set(
+      colors
+        .map((color) => color.trim().toLowerCase().replace(/[\s-]+/g, '_'))
+        .filter(Boolean)
+        .map((color) => aliases[color] ?? color),
+    ),
+  );
+}
+
 /**
  * Generate a diverse, occasion-accurate set of outfit recommendations.
  *
  * Architecture:
- * 1. Merge input context with canonical default context.
- * 2. Build an in-memory catalog map.
- * 3. Generate structurally valid candidates.
- * 4. Score candidates across styling, context and personalization dimensions.
- * 5. Apply a minimum quality threshold.
- * 6. Apply diversity-aware ranking.
- *
- * This file is copied from the private production codebase as a portfolio sample.
- * Its imports intentionally reference modules that are not included in this
- * non-deployable showcase repository.
+ * 1. Merge input context with canonical defaults and normalize requested color families.
+ * 2. Build the in-memory catalog map.
+ * 3. Generate occasion-aware candidates with strict category-role validation.
+ * 4. Score candidates across occasion, color, comfort, weather, personal style and proportions.
+ * 5. Prefer the configured quality threshold, but keep the best-scoring pool as a safe fallback
+ *    so a sparse closet does not produce an empty recommendation screen.
+ * 6. Diversify the final batch with cumulative item and structure reuse penalties.
  */
 export function generateRecommendations(input: RecommendationInput) {
   const context = {
@@ -26,30 +60,45 @@ export function generateRecommendations(input: RecommendationInput) {
     ...input.context,
     occasion: input.context?.occasion || DEFAULT_RECOMMENDATION_CONTEXT.occasion,
     silhouette: input.context?.silhouette || DEFAULT_RECOMMENDATION_CONTEXT.silhouette,
+    colorFamilies: normalizeRequestedColors(input.context?.colorFamilies),
   };
 
-  const { items, personalStyle, bodyProfile } = input;
-  const batchSize = input.batchSize ?? CANDIDATE_LIMITS.shown;
-  const excludeSignatures = input.excludeSignatures;
+  const { items, personalStyle, bodyProfile, batchSize = CANDIDATE_LIMITS.shown } = input;
+  const eligibleItems = context.excludedKeywords?.length
+    ? items.filter((item) => !itemMatchesExcludedKeyword(item, context.excludedKeywords))
+    : items;
+  const excludeSignatures = new Set([
+    ...(input.excludeSignatures ?? []),
+    ...(context.dislikedSignatures ?? []),
+  ]);
   const anchorFingerprint = input.anchorFingerprint;
   const excludeAnchorItemIds = input.excludeAnchorItemIds;
   const sessionItemUsageCount = input.sessionItemUsageCount;
   const sessionStructureUsage = input.sessionStructureUsage;
 
-  const catalog = new Map(items.map((item) => [item.id, item]));
+  const catalog = new Map(eligibleItems.map((item) => [item.id, item]));
 
-  const candidates = generateCandidates(items, context, {
+  const candidates = generateCandidates(eligibleItems, context, {
     excludeSignatures,
     anchorFingerprint,
     excludeAnchorItemIds,
     sessionItemUsageCount,
   });
 
-  const scored = candidates
-    .map((candidate) => scoreCandidate(candidate, catalog, context, personalStyle, bodyProfile))
-    .filter((result) => result.score >= MIN_RECOMMENDATION_SCORE);
+  const scoredAll = candidates.map((candidate) =>
+    scoreCandidate(candidate, catalog, context, personalStyle, bodyProfile)
+  );
 
-  return diversifyResults(scored, batchSize, catalog, {
+  const scoredAboveMin = scoredAll.filter(
+    (result) => result.score >= MIN_RECOMMENDATION_SCORE
+  );
+
+  const pool =
+    scoredAboveMin.length > 0
+      ? scoredAboveMin
+      : [...scoredAll].sort((a, b) => b.score - a.score).slice(0, batchSize * 2);
+
+  return diversifyResults(pool, batchSize, catalog, {
     sessionItemUsageCount,
     sessionStructureUsage,
   });
